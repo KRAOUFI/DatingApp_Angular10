@@ -6,7 +6,7 @@ using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace DatingApp.Controllers
+namespace API.Controllers
 {
     [ApiController]
     [Route("Api/[controller]")]
