@@ -1,17 +1,13 @@
-using API.Data;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using API.Extensions;
 
 namespace API
 {
@@ -26,13 +22,14 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(options =>
-            {
-                options.UseSqlite(_config.GetConnectionString("DefaultConnection"));
-            });
+            // Appeler la méthode d'extension qui enregistre les différents services à injecter dans l'application
+            services.AddApplicationServices(_config);
 
             services.AddControllers();
             services.AddCors();
+
+            // appeler la méthode d'extension qui enregistre le service Identity à injecter dans l'application
+            services.AddIdentityServices(_config);
             
             services.AddSwaggerGen(c =>
             {
@@ -56,6 +53,9 @@ namespace API
             app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins(
                 "http://localhost:4200", 
                 "https://localhost:4200"));
+
+            // Ajouter le middelware de l'authentification
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
