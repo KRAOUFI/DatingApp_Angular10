@@ -20,7 +20,8 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _userService.GetUsers();
+            var users = await _userService.GetUsers();
+            return Ok(users);
         }
 
         // api/users/3 

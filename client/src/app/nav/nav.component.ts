@@ -9,23 +9,19 @@ import { AccountService } from '../_services/account.service';
   styleUrls: ['./nav.component.css']
 })
 export class NavComponent implements OnInit {
-  model: any = {};  
+  model: any = {};
 
   constructor(
-    public accountService: AccountService, 
-    private router: Router, 
+    public accountService: AccountService,
+    private router: Router,
     private toastr: ToastrService) { }
 
-  ngOnInit(): void {    
+  ngOnInit(): void {
   }
 
-  login() {    
+  login() {
     this.accountService.login(this.model).subscribe(response => {
       this.router.navigateByUrl('/members');
-
-    }, error => {
-      console.error(error);
-      this.toastr.error(error.error);
     });
   }
 

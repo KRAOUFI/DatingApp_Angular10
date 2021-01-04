@@ -1,11 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using API.Data;
 using API.Entities;
 using API.IServices;
 using API.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
@@ -18,12 +15,12 @@ namespace API.Services
             _userRepo = userRepo;
         }
 
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers() 
+        public async Task<IEnumerable<User>> GetUsers() 
         {
             return await _userRepo.ToListAsync();
         }
 
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<User> GetUser(int id)
         {
             return await _userRepo.FindByIdAsync(id);
         }

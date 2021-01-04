@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-
 using API.DTOs;
-using API.Entities;
 using API.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,15 +20,19 @@ namespace API.Controllers
         {
             var user = await _accountService.RegisterAsync(dto);
             return user != null ? user : BadRequest("Username is already used");
+            
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDto dto) 
         {
-            try {
+            try 
+            {
                 var user = await _accountService.LoginAsync(dto);
                 return user;
-            } catch (Exception ex) {
+            } 
+            catch (Exception ex) 
+            {
                 return Unauthorized(ex.Message);
             }
         }

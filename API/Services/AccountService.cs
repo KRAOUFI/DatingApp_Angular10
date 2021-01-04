@@ -3,7 +3,6 @@ using API.Entities;
 using API.Interfaces.IServices;
 using API.IServices;
 using API.Repositories;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -24,24 +23,29 @@ namespace API.Services
             _tokenservice = tokenservice;
         }
 
-        public async Task<ActionResult<UserDto>> RegisterAsync(RegisterDto dto)
+        public async Task<UserDto> RegisterAsync(RegisterDto dto)
         {
-            if (await _userRepo.UserExistAsync(dto.Username)) return null;
+            try {
+                if (await _userRepo.UserExistAsync(dto.Username)) return null;
             
-            using var hmac = new HMACSHA512();
-            var user = new User
-            {
-                UserName = dto.Username.ToLower(),
-                PaswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
-                PaswordSalt = hmac.Key
-            };
+                using var hmac = new HMACSHA512();
+                var user = new User
+                {
+                    UserName = dto.Username.ToLower(),
+                    PaswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
+                    PaswordSalt = hmac.Key
+                };
 
-            await _userRepo.CreateAsync(user);
+                await _userRepo.CreateAsync(user);
 
-            return new UserDto { Username = user.UserName, Token = _tokenservice.CreateToken(user) } ;
+                return new UserDto { Username = user.UserName, Token = _tokenservice.CreateToken(user) } ;
+            } catch {
+                throw;
+            }
+            
         }
 
-        public async Task<ActionResult<UserDto>> LoginAsync(LoginDto dto)
+        public async Task<UserDto> LoginAsync(LoginDto dto)
         {
             try 
             {
@@ -61,9 +65,9 @@ namespace API.Services
 
                 return new UserDto {Username = user.UserName, Token = _tokenservice.CreateToken(user) };
             } 
-            catch (Exception ex) 
+            catch
             {
-                throw ex;
+                throw;
             }
         }
     }
