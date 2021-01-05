@@ -8,12 +8,13 @@ namespace API.IRepositories
 {
     public interface IRepository<T> where T : class
     {
-        Task<List<T>> ToListAsync();
-        Task<T> FindByIdAsync(int id);
-        Task<List<T>> FindAsync(Expression<Func<T, bool>> where);
+        Task<T> GetByIdAsync(int id);
+        Task<T> GetByConditionAsync(Expression<Func<T, bool>> where);
+        Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> GetAllByConditionAsync(Expression<Func<T, bool>> where);        
         Task<bool> ExistAsync(Expression<Func<T, bool>> where);
-        Task<T> CreateAsync(T entity);
-        Task<T> UpdateAsync(T entity);
-        Task<T> DeleteAsync(int id);
+        Task<int> CreateAsync(T entity);
+        Task<int> UpdateAsync(T entity);
+        Task<int> DeleteAsync(int id);
     }
 }

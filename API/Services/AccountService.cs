@@ -25,8 +25,9 @@ namespace API.Services
 
         public async Task<UserDto> RegisterAsync(RegisterDto dto)
         {
-            try {
-                if (await _userRepo.UserExistAsync(dto.Username)) return null;
+            try 
+            {
+                if (await _userRepo.ExistAsync(x => x.UserName == dto.Username.ToLower())) return null;
             
                 using var hmac = new HMACSHA512();
                 var user = new User
@@ -49,7 +50,7 @@ namespace API.Services
         {
             try 
             {
-                var user = await _userRepo.FindUserAsync(dto.Username);
+                var user = await _userRepo.GetByConditionAsync(x=>x.UserName == dto.Username.ToLower());
                 if (user == null) {
                     throw new Exception("Invalid username");
                 }

@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpGet("not-found")]
         public async Task<ActionResult<User>> GetNotFoundSecret()
         {
-            var thing = await _userService.GetUser(-1);
+            var thing = await _userService.GetUserAsync(-1);
             if (thing == null) return NotFound();
             return Ok(thing);
         }
@@ -33,7 +33,7 @@ namespace API.Controllers
         [HttpGet("server-error")]
         public async Task<ActionResult<string>> GetServerError()
         {            
-            var thing = await _userService.GetUser(-1);
+            var thing = await _userService.GetUserAsync(-1);
             var thingtoreturn = thing.ToString();
             return thingtoreturn;
         }
