@@ -9,5 +9,6 @@ namespace API.IServices
         Task<IEnumerable<MemberDto>> GetUsersAsync();
         Task<MemberDto> GetUserAsync(int id);
         Task<MemberDto> GetUserByUsernameAsync(string username);
+        Task<int> UpdateUser(string username, MemberUpdateDto dtoToUpdate);
     }
 }

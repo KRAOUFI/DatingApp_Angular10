@@ -15,6 +15,8 @@ export class AccountService {
   baseUrl = environment.apiUrl;
 
   private currentUserSource = new ReplaySubject<User>(1);
+
+  // Selon la convention, on ajoute $ devant tout Observable
   currentUser$ = this.currentUserSource.asObservable();
 
   constructor(private http: HttpClient) { }

@@ -43,5 +43,12 @@ namespace API.Services
             /* 2nd façon de faire et qui est mieux optimisé en terme de requète SQL généré */
             return await _userRepo.GetMembersAsync();
         }
+
+        public async Task<int> UpdateUser(string username, MemberUpdateDto dtoToUpdate)
+        {
+            var user = await _userRepo.GetByConditionAsync(x => x.UserName == username);
+            _mapper.Map(dtoToUpdate, user);
+            return await _userRepo.UpdateAsync(user);
+        }
     }
 }

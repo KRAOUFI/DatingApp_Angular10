@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Entities;
@@ -29,6 +30,17 @@ namespace API.Controllers
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
             return await _userService.GetUserByUsernameAsync(username);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> UpdateUser(MemberUpdateDto dtoToUpdate) {
+            // FindFirst: Methode de ClaimsPrincipal qui renvoie le premier claim avec 
+            // l'éléments spécifié. Ici nous demondons NameIdentifier 
+            var username = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            return await _userService.UpdateUser(username,dtoToUpdate) > 0 ? 
+                NoContent() : 
+                BadRequest("Failed to update");
         }
     }
 }
