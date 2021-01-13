@@ -4,6 +4,7 @@ using API.Interfaces.IServices;
 using API.IServices;
 using API.Repositories;
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ namespace API.Services
         {
             try 
             {
-                var user = await _userRepo.GetByConditionAsync(x=>x.UserName == dto.Username.ToLower());
+                var user = await _userRepo.GetUserByUsernameAsync(dto.Username.ToLower());
                 if (user == null) {
                     throw new Exception("Invalid username");
                 }
@@ -64,7 +65,12 @@ namespace API.Services
                     }
                 }
 
-                return new UserDto {Username = user.UserName, Token = _tokenservice.CreateToken(user) };
+                return new UserDto 
+                {
+                    Username = user.UserName, 
+                    PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain == true)?.Url, 
+                    Token = _tokenservice.CreateToken(user) 
+                };
             } 
             catch
             {
