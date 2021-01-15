@@ -17,17 +17,17 @@
                 </div>
                 <div>
                     <strong>Membe since:</strong>
-                    <p>{{member.created}}</p>
+                    <p>{{member.created | date : 'dd/MM/yyyy'}}</p>
                 </div>
                 <div>
                     <strong>Last ative:</strong>
-                    <p>{{member.lastActive}}</p>
+                    <p>{{member.lastActive | date : 'dd/MM/yyyy'}}</p>
                 </div>
             </div>
             <div class="card-footer">
                 <div class="btn-group d-flex">
-                    <button class="btn btn-primary">Like</button>
-                    <button class="btn btn-success">Message</button>
+                    <button class="col-6 btn btn-primary mr-2">Like</button>
+                    <button class="col-6 btn btn-success">Message</button>
                 </div>
             </div>
         </div>

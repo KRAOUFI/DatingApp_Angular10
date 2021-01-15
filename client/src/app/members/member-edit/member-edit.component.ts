@@ -14,24 +14,24 @@ import { MembersService } from 'src/app/_services/members.service';
 })
 export class MemberEditComponent implements OnInit {
   @ViewChild('editForm') editForm: NgForm;
-  /* 
-  Ce listener permet de détecter si l'utilisateur tente d'aller sur une url différente 
-  via la barre d'adresse du navigateur. Dans ce cas là, il est averti par une popup.
-  */
-  @HostListener("window:beforeunload", ["$event"]) 
-  unloadNotification($event: any) {
-    if(this.editForm.dirty) {
-      $event.retunValue = true;
-    }
-  }
 
   member: Member;
   user: User;
 
+  /*
+  Ce listener permet de détecter si l'utilisateur tente d'aller sur une url différente
+  via la barre d'adresse du navigateur. Dans ce cas là, il est averti par une popup.
+  */
+  @HostListener('window:beforeunload', ['$event']) unloadNotification($event: any) {
+    if (this.editForm.dirty) {
+      return false;
+    }
+  }
+
   constructor(
-    private accountService: AccountService, 
+    private accountService: AccountService,
     private memberService: MembersService,
-    private toastr: ToastrService) { 
+    private toastr: ToastrService) {
       this.accountService.currentUser$.pipe(take(1)).subscribe( usr => this.user = usr);
   }
 
