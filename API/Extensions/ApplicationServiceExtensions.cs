@@ -33,6 +33,8 @@ namespace API.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IPhotoService, PhotoService>();
+
+            services.AddScoped<LogUserActivity>();
             /*********************************************************/
 
             return services;

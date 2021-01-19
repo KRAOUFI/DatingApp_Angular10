@@ -46,7 +46,8 @@ namespace API.Services
                 return new UserDto { 
                     Username = user.UserName,
                     Token = _tokenservice.CreateToken(user),
-                    KnownAs = user.KnownAs
+                    KnownAs = user.KnownAs,
+                    Gender = user.Gender
                 };
             } catch {
                 throw;
@@ -77,6 +78,7 @@ namespace API.Services
                     Username = user.UserName, 
                     PhotoUrl = user.Photos.FirstOrDefault(x => x.IsMain == true)?.Url, 
                     KnownAs = user.KnownAs,
+                    Gender = user.Gender,
                     Token = _tokenservice.CreateToken(user) 
                 };
             } 

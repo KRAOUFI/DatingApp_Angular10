@@ -25,13 +25,13 @@
                     <p>{{member.age}}</p>
                 </div>
                 <div>
-                    <strong>Membe since:</strong>
-                    <p>{{member.created}}</p>
+                    <strong>Last ative:</strong>
+                    <p>{{member.lastActive | timeago}}</p>
                 </div>
                 <div>
-                    <strong>Last ative:</strong>
-                    <p>{{member.lastActive}}</p>
-                </div>
+                    <strong>Membe since:</strong>
+                    <p>{{member.created | date : 'dd MMM yyyy'}}</p>
+                </div>                
             </div>
             <div class="card-footer">
                 <!-- l'attribut form="editForm" nous donne accès au form qui est un peu plus bas pour faire le submit -->

@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces.IServices;
 using API.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -25,9 +26,11 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+        public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
         {
-            var users = await _userService.GetUsersAsync();
+            var currentUser = await _userService.GetUserByUsernameAsync(User.GetUserName());
+            var users = await _userService.GetUsersAsync(currentUser, userParams);
+            Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
             return Ok(users);
         }
 

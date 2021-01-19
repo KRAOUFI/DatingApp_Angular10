@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.DTOs;
+using API.Helpers;
 using API.IServices;
 using API.Repositories;
 using AutoMapper;
@@ -34,14 +36,21 @@ namespace API.Services
             return await _userRepo.GetMemberByUsernameAsync(username);
         }
 
-        public async Task<IEnumerable<MemberDto>> GetUsersAsync() 
+        public async Task<PagedList<MemberDto>> GetUsersAsync(MemberDto currentUser, UserParams userParams) 
         {
             /* 1ère façon de requêter dans les entité User et Photo mais qui n'est pas bien optimisé */
             // var users = await _userRepo.GetUsersAsync();
             // return _mapper.Map<IEnumerable<MemberDto>>(users);
 
             /* 2nd façon de faire et qui est mieux optimisé en terme de requète SQL généré */
-            return await _userRepo.GetMembersAsync();
+            //return await _userRepo.GetMembersAsync();
+
+            /* 3ème façon de requeter en ajoutant la pagination */
+            userParams.CurrentUsername = currentUser.Username;
+            if (string.IsNullOrEmpty(userParams.Gender))
+                userParams.Gender = currentUser.Gender == "male" ? "female" : "male";
+            
+            return await _userRepo.GetMembersAsync(userParams);
         }
 
         public async Task<int> UpdateUser(string username, MemberUpdateDto dtoToUpdate)
@@ -49,6 +58,13 @@ namespace API.Services
             var user = await _userRepo.GetByConditionAsync(x => x.UserName == username);
             _mapper.Map(dtoToUpdate, user);
             return await _userRepo.UpdateAsync(user);
+        }
+
+        public async Task UpdateUserLastActivity(int userId)
+        {
+            var user = await _userRepo.GetByIdAsync(userId);
+            user.LastActive = DateTime.Now;
+            await _userRepo.UpdateAsync(user);
         }
     }
 }
