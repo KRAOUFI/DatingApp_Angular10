@@ -29,10 +29,12 @@ namespace API.Extensions
 
             services.AddScoped<UserRepository>();
             services.AddScoped<PhotoRepository>();
+            services.AddScoped<LikesRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IPhotoService, PhotoService>();
+            services.AddScoped<ILikesService, LikesService>();
 
             services.AddScoped<LogUserActivity>();
             /*********************************************************/

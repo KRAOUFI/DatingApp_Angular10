@@ -47,17 +47,6 @@ export class MembersService {
   }
 
   getMembers(userParams: UserParams) {
-    // Avant la pagination
-    /* if (this.members.length > 0) { return of(this.members); } */
-    /* L'inconveniant "members" contient tous les users, ce qui risque d'être lourd au niveau du chargement
-    return this.http.get<Member[]>(this.baseUrl + 'users').pipe(
-      map(result => {
-        this.members = result;
-        return this.members;
-      })
-    );
-    */
-
     // Pour visualiser les params reçus
     // console.log(Object.values(userParams).join('-'));
     const response = this.memberCache.get(Object.values(userParams).join('-'));
@@ -80,6 +69,14 @@ export class MembersService {
     );
   }
 
+  private getPaginationHeaders(pageNumber: number, pageSize: number) {
+    let params = new HttpParams();
+    params = params.append('pageNumber', pageNumber.toString());
+    params = params.append('pageSize', pageSize.toString());
+
+    return params;
+  }
+
   private getPaginationResult<T>(url, params) {
     const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>();
 
@@ -95,17 +92,8 @@ export class MembersService {
     );
   }
 
-  private getPaginationHeaders(pageNumber: number, pageSize: number) {
-    let params = new HttpParams();
-    params = params.append('pageNumber', pageNumber.toString());
-    params = params.append('pageSize', pageSize.toString());
-
-    return params;
-  }
-
   getMember(username: string) {
     // console.log(this.memberCache);
-
     // Reduce, permet de transferer le contenu du dictionnaire dans un tableau
     const memberToReturn = [...this.memberCache.values()]
       .reduce((arr, elem) => arr.concat(elem.result), [])
@@ -133,5 +121,16 @@ export class MembersService {
 
   deletePhoto(photoId: number) {
     return this.http.delete(this.baseUrl + 'users/delete-photo/' + photoId);
+  }
+
+  addLike(username: string) {
+    return this.http.post(this.baseUrl + 'likes/' + username, {});
+  }
+
+  getLikes(predicate: string, pageNumber: number, pageSize: number) {
+    let params = this.getPaginationHeaders(pageNumber, pageSize);
+    params = params.append('predicate', predicate);
+
+    return this.getPaginationResult<Partial<Member[]>>(this.baseUrl + 'likes', params);
   }
 }

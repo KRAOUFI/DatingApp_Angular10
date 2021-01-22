@@ -129,6 +129,6 @@ namespace API.Repositories
             var members = query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider).AsNoTracking();
             return await PagedList<MemberDto>.CreateAsync(members, userParams.PageNumber, userParams.PageSize);
         }
-        #endregion
+        #endregion        
     }
 }
