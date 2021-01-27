@@ -13,8 +13,10 @@ namespace API.IRepositories
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> GetAllByConditionAsync(Expression<Func<T, bool>> where);        
         Task<bool> ExistAsync(Expression<Func<T, bool>> where);
-        Task<int> CreateAsync(T entity);
-        Task<int> UpdateAsync(T entity);
-        Task<int> DeleteAsync(int id);
+        void Add(T entity);
+        void Update(T entity);
+        Task DeleteAsync(int id);
+        Task<int> SaveAsync();
+        IQueryable<T> AsQueryable();
     }
 }

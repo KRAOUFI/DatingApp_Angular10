@@ -1,11 +1,14 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs;
+using API.Entities;
 using API.Helpers;
-using API.IServices;
+using API.Interfaces.IServices;
 using API.Repositories;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
@@ -28,43 +31,50 @@ namespace API.Services
 
         public async Task<MemberDto> GetUserByUsernameAsync(string username)
         {
-            /* 1ère façon de requêter dans les entité User et Photo mais qui n'est pas bien optimisé */
-            // var user = await _userRepo.GetUserByUsernameAsync(username);
-            // return _mapper.Map<MemberDto>(user);
-            
-            /* 2nd façon de faire et qui est mieux optimisé en terme de requête SQL générée */
-            return await _userRepo.GetMemberByUsernameAsync(username);
+            var query = _userRepo.AsQueryable();            
+            return await query.Where(x => x.UserName == username.ToLower())
+                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync();
         }
 
         public async Task<PagedList<MemberDto>> GetUsersAsync(MemberDto currentUser, UserParams userParams) 
         {
-            /* 1ère façon de requêter dans les entité User et Photo mais qui n'est pas bien optimisé */
-            // var users = await _userRepo.GetUsersAsync();
-            // return _mapper.Map<IEnumerable<MemberDto>>(users);
-
-            /* 2nd façon de faire et qui est mieux optimisé en terme de requète SQL généré */
-            //return await _userRepo.GetMembersAsync();
-
-            /* 3ème façon de requeter en ajoutant la pagination */
             userParams.CurrentUsername = currentUser.Username;
             if (string.IsNullOrEmpty(userParams.Gender))
                 userParams.Gender = currentUser.Gender == "male" ? "female" : "male";
+
+            var query = _userRepo.AsQueryable();
+            query = query.Where(u => u.UserName != userParams.CurrentUsername);
+            query = query.Where(u => u.Gender == userParams.Gender);
             
-            return await _userRepo.GetMembersAsync(userParams);
+            var minDateOfBirth = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+            var maxDateOfBirth = DateTime.Today.AddYears(-userParams.MinAge);
+            query = query.Where(u => u.DateOfBirth >= minDateOfBirth && u.DateOfBirth <= maxDateOfBirth);
+
+            query = userParams.OrderBy switch 
+            {
+                "created" => query.OrderByDescending(u => u.Created), 
+                _ => query.OrderByDescending(u => u.LastActive)
+            };
+            
+            var members = query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider).AsNoTracking();
+            return await PagedList<MemberDto>.CreateAsync(members, userParams.PageNumber, userParams.PageSize);
         }
 
         public async Task<int> UpdateUser(string username, MemberUpdateDto dtoToUpdate)
         {
             var user = await _userRepo.GetByConditionAsync(x => x.UserName == username);
             _mapper.Map(dtoToUpdate, user);
-            return await _userRepo.UpdateAsync(user);
+            _userRepo.Update(user);
+            return await _userRepo.SaveAsync(); 
         }
 
         public async Task UpdateUserLastActivity(int userId)
         {
             var user = await _userRepo.GetByIdAsync(userId);
             user.LastActive = DateTime.Now;
-            await _userRepo.UpdateAsync(user);
+            _userRepo.Update(user);
+            await _userRepo.SaveAsync();
         }
     }
 }

@@ -1,6 +1,5 @@
 using API.Entities;
-using API.IServices;
-using API.Services;
+using API.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

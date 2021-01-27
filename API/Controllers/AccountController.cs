@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using API.DTOs;
-using API.IServices;
+using API.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

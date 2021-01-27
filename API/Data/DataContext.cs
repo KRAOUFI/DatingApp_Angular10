@@ -16,6 +16,7 @@ namespace API.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Like> Likes { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         /// <summary>
         /// Fournir aux Entités quelques configurations avant la creation des tables associées
@@ -39,6 +40,18 @@ namespace API.Data
                 .WithMany(l => l.LikedBy)
                 .HasForeignKey( s => s.LikedId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Un Reciepient a plusieurs MessageRecieved
+            builder.Entity<Message>()
+                .HasOne(m => m.Recipient)
+                .WithMany(u => u.MessageReceived)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Un sender a plusieurs MessageSent
+            builder.Entity<Message>()
+                .HasOne(m=>m.Sender)
+                .WithMany(u => u.MessageSent)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

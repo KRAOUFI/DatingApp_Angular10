@@ -1,7 +1,6 @@
 using API.Data;
 using API.Helpers;
 using API.Interfaces.IServices;
-using API.IServices;
 using API.Repositories;
 using API.Services;
 using AutoMapper;
@@ -30,11 +29,13 @@ namespace API.Extensions
             services.AddScoped<UserRepository>();
             services.AddScoped<PhotoRepository>();
             services.AddScoped<LikesRepository>();
+            services.AddScoped<MessagesRepository>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<ILikesService, LikesService>();
+            services.AddScoped<IMessagesService, MessagesService>();
 
             services.AddScoped<LogUserActivity>();
             /*********************************************************/

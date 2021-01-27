@@ -1,16 +1,13 @@
-﻿using API.Data;
-using API.DTOs;
-using API.Entities;
-using API.Helpers;
-using API.IRepositories;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using API.Data;
+using API.Entities;
+using API.IRepositories;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
@@ -52,28 +49,33 @@ namespace API.Repositories
             return await _entity.AnyAsync(where);
         }
 
-        public async Task<int> CreateAsync(User entity)
+        public void Add(User entity)
         {
             _entity.Add(entity);
-            return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> UpdateAsync(User entity)
+        public void Update(User entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var theEntity = await _entity.FindAsync(id);
+            if (theEntity != null)
+            {
+                _entity.Remove(theEntity);
+            }
+        }
+
+        public async Task<int> SaveAsync()
+        {
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public IQueryable<User> AsQueryable() 
         {
-            var theEntity = await _entity.FindAsync(id);
-            if (theEntity == null)
-            {
-                return -1;
-            }
-
-            _entity.Remove(theEntity);
-            return await _context.SaveChangesAsync();;
+            return _entity.AsQueryable();
         }
 
         #region Ces deux méthodes sont écrites de façon basiques pour retourner les données attendue. Le SQL généré n'est pas optimisé car inclus l'ensemble des champs des tables requêtées.
@@ -85,8 +87,8 @@ namespace API.Repositories
         public async Task<User> GetUserByUsernameAsync(string username) 
         {
             return await _entity
-                            .Include(p => p.Photos)
-                            .SingleOrDefaultAsync(x => x.UserName == username.ToLower());
+                .Include(p => p.Photos)
+                .SingleOrDefaultAsync(x => x.UserName == username.ToLower());
         }
 
         /// <summary>
@@ -96,38 +98,15 @@ namespace API.Repositories
         public async Task<IEnumerable<User>> GetUsersAsync()
         {
             return await _entity
-                            .Include(p => p.Photos)
-                            .ToListAsync();
-        }
-        #endregion
-
-        #region En utilisant ProjectTo, nous optimisons les requêtes générées
-        public async Task<MemberDto> GetMemberByUsernameAsync(string username)
-        {
-            return await _context.Users
-                .Where(x => x.UserName == username.ToLower())
-                .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync();
+                .Include(p => p.Photos)
+                .ToListAsync();
         }
 
-        public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams) 
+        public async Task<User> GetUserWithLikes(int userId) 
         {
-            var query = _context.Users.AsQueryable();
-            query = query.Where(u => u.UserName != userParams.CurrentUsername);
-            query = query.Where(u => u.Gender == userParams.Gender);
-            
-            var minDateOfBirth = DateTime.Today.AddYears(-userParams.MaxAge - 1);
-            var maxDateOfBirth = DateTime.Today.AddYears(-userParams.MinAge);
-            query = query.Where(u => u.DateOfBirth >= minDateOfBirth && u.DateOfBirth <= maxDateOfBirth);
-
-            query = userParams.OrderBy switch 
-            {
-                "created" => query.OrderByDescending(u => u.Created), 
-                _ => query.OrderByDescending(u => u.LastActive)             // default switch
-            };
-            
-            var members = query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider).AsNoTracking();
-            return await PagedList<MemberDto>.CreateAsync(members, userParams.PageNumber, userParams.PageSize);
+            return await _entity
+                .Include(u => u.Liked)
+                .FirstOrDefaultAsync(x=>x.Id == userId);
         }
         #endregion        
     }

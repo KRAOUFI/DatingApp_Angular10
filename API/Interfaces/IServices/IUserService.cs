@@ -1,9 +1,9 @@
 ﻿using API.DTOs;
+using API.Entities;
 using API.Helpers;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace API.IServices
+namespace API.Interfaces.IServices
 {
     public interface IUserService
     {

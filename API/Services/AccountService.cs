@@ -1,7 +1,6 @@
 using API.DTOs;
 using API.Entities;
 using API.Interfaces.IServices;
-using API.IServices;
 using API.Repositories;
 using AutoMapper;
 using System;
@@ -41,9 +40,11 @@ namespace API.Services
                 user.PaswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
                 user.PaswordSalt = hmac.Key;
 
-                await _userRepo.CreateAsync(user);
+                _userRepo.Add(user);
+                await _userRepo.SaveAsync();
 
-                return new UserDto { 
+                return new UserDto 
+                {
                     Username = user.UserName,
                     Token = _tokenservice.CreateToken(user),
                     KnownAs = user.KnownAs,
@@ -52,7 +53,6 @@ namespace API.Services
             } catch {
                 throw;
             }
-            
         }
 
         public async Task<UserDto> LoginAsync(LoginDto dto)

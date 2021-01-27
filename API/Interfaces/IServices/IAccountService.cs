@@ -1,7 +1,7 @@
 ﻿using API.DTOs;
 using System.Threading.Tasks;
 
-namespace API.IServices
+namespace API.Interfaces.IServices
 {
     public interface IAccountService
     {

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -5,66 +6,65 @@ using System.Threading.Tasks;
 using API.Data;
 using API.DTOs;
 using API.Entities;
-using API.Extensions;
 using API.Helpers;
 using API.IRepositories;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
-    public class LikesRepository : IRepository<Like>
+    public class MessagesRepository : IRepository<Message>
     {
-        private readonly DataContext _context;
         private readonly IMapper _mapper;
-        private readonly DbSet<Like> _entity;
-
-        public LikesRepository(DataContext context, IMapper mapper)
+        private readonly DataContext _context;
+        private readonly DbSet<Message> _entity;
+        public MessagesRepository(DataContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _entity = _context.Set<Like>();
+            _entity = _context.Set<Message>();
         }
 
-        public async Task<Like> GetByIdAsync(int id)
+        public async Task<Message> GetByIdAsync(int id)
         {
             return await _entity.FindAsync(id);
         }
 
-        public async Task<Like> GetByConditionAsync(Expression<System.Func<Like, bool>> where)
+        public async Task<Message> GetByConditionAsync(Expression<Func<Message, bool>> where)
         {
             return await _entity.SingleOrDefaultAsync(where);
         }
 
-        public async Task<IEnumerable<Like>> GetAllAsync()
+        public async Task<IEnumerable<Message>> GetAllAsync()
         {
             return await _entity.ToListAsync();
         }
 
-        public async Task<IEnumerable<Like>> GetAllByConditionAsync(Expression<System.Func<Like, bool>> where)
+        public async Task<IEnumerable<Message>> GetAllByConditionAsync(Expression<Func<Message, bool>> where)
         {
             return await _entity.Where(where).ToListAsync();
         }
 
-        public async Task<bool> ExistAsync(Expression<System.Func<Like, bool>> where)
+        public async Task<bool> ExistAsync(Expression<Func<Message, bool>> where)
         {
             return await _entity.AnyAsync(where);
         }
 
-        public void Add(Like entity)
+        public void Add(Message entity)
         {
             _entity.Add(entity);
         }
 
-        public void Update(Like entity)
+        public void Update(Message entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
         }
 
         public async Task DeleteAsync(int id)
         {
-            var entityToDelete = await _entity.FindAsync(id);
-            if (entityToDelete != null) 
+            var entityToDelete = await this.GetByIdAsync(id);
+            if (entityToDelete != null)
             {
                 _entity.Remove(entityToDelete);
             }
@@ -75,7 +75,7 @@ namespace API.Repositories
             return await _context.SaveChangesAsync();
         }
 
-        public IQueryable<Like> AsQueryable() 
+        public IQueryable<Message> AsQueryable() 
         {
             return _entity.AsQueryable();
         }

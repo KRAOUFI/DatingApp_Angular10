@@ -49,26 +49,33 @@ namespace API.Repositories
             return await _entity.AnyAsync(where);
         }
 
-        public async Task<int> CreateAsync(Photo entity)
+        public void Add(Photo entity)
         {
             _entity.Add(entity);
-            return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> UpdateAsync(Photo entity)
+        public void Update(Photo entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var photoToDelete = await _entity.FindAsync(id);
+            if (photoToDelete != null)
+            {
+                _entity.Remove(photoToDelete);
+            }
+        }
+
+        public async Task<int> SaveAsync()
+        {
             return await _context.SaveChangesAsync();
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public IQueryable<Photo> AsQueryable() 
         {
-            var photoToDelete = await _entity.FindAsync(id);
-            if (photoToDelete == null) {
-                return -1;
-            }
-            _entity.Remove(photoToDelete);
-            return await _context.SaveChangesAsync();
+            return _entity.AsQueryable();
         }
     }
 }

@@ -27,5 +27,7 @@ namespace API.Entities
         
         public ICollection<Like> LikedBy { get; set; }
         public ICollection<Like>  Liked { get; set; }
+        public ICollection<Message> MessageSent { get; set; }
+        public ICollection<Message> MessageReceived { get; set; }
     }
 }

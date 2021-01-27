@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces.IServices;
-using API.IServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

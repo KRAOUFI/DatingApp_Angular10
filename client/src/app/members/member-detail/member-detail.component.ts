@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NgxGalleryAnimation, NgxGalleryImage, NgxGalleryOptions } from '@kolkov/ngx-gallery';
+import { TabDirective, TabsetComponent } from 'ngx-bootstrap/tabs';
 import { Member } from 'src/app/_models/member';
+import { Message } from 'src/app/_models/message';
 import { MembersService } from 'src/app/_services/members.service';
+import { MessageService } from 'src/app/_services/message.service';
 
 @Component({
   selector: 'app-member-detail',
@@ -13,30 +16,47 @@ export class MemberDetailComponent implements OnInit {
   member: Member;
   galleryOptions: NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
-  
+
+  @ViewChild('memberTabs', {static: true}) memberTabs: TabsetComponent;
+  activeTab: TabDirective;
+  messages: Message[] = [];
+
   constructor(
     private memberService: MembersService,
+    private messageService: MessageService,
     private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.loadMember();
-    
+    /*
+    Lorsque Angular charge une page, parfois nous devons accédet à une propriété qu'il n'a pas encore initialisé
+    Pour éviter ce genre de désagrement, la solution est de créer un Resolver, qui lui initialise la propriété
+    et ne charge la page que lorsque celle-ci est prête.
+    Dans notre cas déplacer la méthode loadMember() dans le resolver
+    */
+    this.route.data.subscribe(data => {
+      this.member = data.member;
+    });
+
+    this.route.queryParams.subscribe(params => {
+      params.tab ? this.selectTab(params.tab) : this.selectTab(0);
+    });
+
     this.galleryOptions = [
       {
         width: '500px',
-        height:'500px',
-        imagePercent:100,
+        height: '500px',
+        imagePercent: 100,
         thumbnailsColumns: 4,
         imageAnimation: NgxGalleryAnimation.Slide,
         preview: false
       }
     ];
 
-    
+    this.galleryImages = this.getImages();
   }
 
   getImages(): NgxGalleryImage[] {
-    const imageUrl=[];
+    const imageUrl = [];
     for (const photo of this.member.photos) {
       imageUrl.push({
         small: photo?.url,
@@ -47,12 +67,22 @@ export class MemberDetailComponent implements OnInit {
     return imageUrl;
   }
 
-  loadMember() {
-    this.memberService
-    .getMember(this.route.snapshot.paramMap.get('username'))
-    .subscribe(result => {
-      this.member = result;
-      this.galleryImages = this.getImages();
+  loadMessages() {
+    this.messageService.getMessageThread(this.member.username).subscribe(response => {
+      this.messages = response;
     });
   }
+
+  selectTab(tabId: number) {
+    this.memberTabs.tabs[tabId].active = true;
+  }
+
+  onTabActivated(data: TabDirective) {
+    this.activeTab = data;
+    if (this.activeTab.heading === 'Messages' && this.messages.length === 0) {
+      this.loadMessages();
+    }
+  }
+
+
 }

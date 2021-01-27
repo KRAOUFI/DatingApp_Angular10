@@ -48,9 +48,11 @@ namespace API.Services
                 PublicId = image.PublicId,
                 IsMain = user.Photos.Count == 0 ? true : false
             };
-            user.Photos.Add(photo);
+
+            user.Photos.Add(photo);            
+            _userRepository.Update(user);
             
-            return await _userRepository.UpdateAsync(user) > 0 ? _mapper.Map<PhotoDto>(photo) : null;
+            return await _userRepository.SaveAsync() > 0 ? _mapper.Map<PhotoDto>(photo) : null;
         }
 
         public async Task<int> SetMainPhoto(string username, int photoId) 
@@ -63,7 +65,8 @@ namespace API.Services
             var photoToBeMain = user.Photos.FirstOrDefault(x=>x.Id == photoId);
             if(photoToBeMain != null) photoToBeMain.IsMain = true;
             
-            return await _userRepository.UpdateAsync(user);
+            _userRepository.Update(user);
+            return await _userRepository.SaveAsync();
         }
 
         public async Task<int> DeletePhoto(string username, int photoId) 
@@ -87,7 +90,8 @@ namespace API.Services
                 }
                 
                 user.Photos.Remove(photoToDelete);
-                return await _userRepository.UpdateAsync(user);
+                _userRepository.Update(user);
+                return await _userRepository.SaveAsync();
             } 
             catch(Exception ex) 
             {
