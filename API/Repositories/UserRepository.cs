@@ -11,50 +11,50 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
-    public class UserRepository : IRepository<User>
+    public class UserRepository : IRepository<AppUser>
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
-        private readonly DbSet<User> _entity;
+        private readonly DbSet<AppUser> _entity;
 
         public UserRepository(DataContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _entity = _context.Set<User>();
+            _entity = _context.Set<AppUser>();
         }
 
-        public async Task<User> GetByIdAsync(int id)
+        public async Task<AppUser> GetByIdAsync(int id)
         {
             return await _entity.FindAsync(id);
         }
 
-        public async Task<User> GetByConditionAsync(Expression<Func<User, bool>> where) 
+        public async Task<AppUser> GetByConditionAsync(Expression<Func<AppUser, bool>> where) 
         {
             return await _entity.SingleOrDefaultAsync(where);
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<IEnumerable<AppUser>> GetAllAsync()
         {
             return await _entity.ToListAsync();
         }
 
-        public async Task<IEnumerable<User>> GetAllByConditionAsync(Expression<Func<User, bool>> where)
+        public async Task<IEnumerable<AppUser>> GetAllByConditionAsync(Expression<Func<AppUser, bool>> where)
         {
             return await _entity.Where(where).ToListAsync();
         }
 
-        public async Task<bool> ExistAsync(Expression<Func<User, bool>> where)
+        public async Task<bool> ExistAsync(Expression<Func<AppUser, bool>> where)
         {
             return await _entity.AnyAsync(where);
         }
 
-        public void Add(User entity)
+        public void Add(AppUser entity)
         {
             _entity.Add(entity);
         }
 
-        public void Update(User entity)
+        public void Update(AppUser entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
         }
@@ -73,7 +73,7 @@ namespace API.Repositories
             return await _context.SaveChangesAsync();
         }
 
-        public IQueryable<User> AsQueryable() 
+        public IQueryable<AppUser> AsQueryable() 
         {
             return _entity.AsQueryable();
         }
@@ -84,7 +84,7 @@ namespace API.Repositories
         /// </summary>
         /// <param name="username"></param>
         /// <returns></returns>
-        public async Task<User> GetUserByUsernameAsync(string username) 
+        public async Task<AppUser> GetUserByUsernameAsync(string username) 
         {
             return await _entity
                 .Include(p => p.Photos)
@@ -95,14 +95,14 @@ namespace API.Repositories
         /// Retourne l'ensemble des User en incluant les photos associées
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<User>> GetUsersAsync()
+        public async Task<IEnumerable<AppUser>> GetUsersAsync()
         {
             return await _entity
                 .Include(p => p.Photos)
                 .ToListAsync();
         }
 
-        public async Task<User> GetUserWithLikes(int userId) 
+        public async Task<AppUser> GetUserWithLikes(int userId) 
         {
             return await _entity
                 .Include(u => u.Liked)

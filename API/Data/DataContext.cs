@@ -1,4 +1,6 @@
 ﻿using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,24 +9,33 @@ using System.Threading.Tasks;
 
 namespace API.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<AppUser, AppRole, int, 
+        IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>, 
+        IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public DataContext(DbContextOptions options) : base(options)
         {
 
         }
-
-        public DbSet<User> Users { get; set; }
+        
         public DbSet<Like> Likes { get; set; }
         public DbSet<Message> Messages { get; set; }
+        
 
         /// <summary>
-        /// Fournir aux Entités quelques configurations avant la creation des tables associées
+        /// Fournir aux Entités les configurations nécessaires avant la creation des tables associées
         /// </summary>
         /// <param name="builder"></param>
         protected override void OnModelCreating(ModelBuilder builder) 
         {
             base.OnModelCreating(builder);
+
+            /* configuration des relation entre AppUser et AppRole */
+            builder.Entity<AppUser>()
+                .HasOne(ur => ur.UserRoles)
+                .WithOne(u => u.User)
+                .HasForeignKey(ur => ur.UserId).IsRequired();
+            //
 
             builder.Entity<Like>()
                 .HasKey( k => new { k.SourceId, k.LikedId });

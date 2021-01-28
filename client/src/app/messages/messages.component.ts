@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { threadId } from 'worker_threads';
 import { Message } from '../_models/message';
 import { Pagination } from '../_modules/pagination';
 import { MessageService } from '../_services/message.service';

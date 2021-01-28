@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using API.Extensions;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Entities
 {
-    public class User
+    /// <summary>
+    /// Par defaut, IdentityUser utilise un string pour la clé primaire. Ici nous lui indiquons que la clé primaire est un integer
+    /// Aussi nous n'avons pas besoin de définir des propriétés comme ID, UserName, PasswordHash ou PasswordSalt
+    /// parce que ces champs viennent avec l'implementation de IdentityUser.
+    /// </summary>
+    public class AppUser : IdentityUser<int>
     {
-        public int Id { get; set; }
-        public string UserName { get; set; }
-        public byte[] PaswordHash { get; set; } 
-        public byte[] PaswordSalt { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string KnownAs { get; set; }
         public DateTime Created { get; set; } = DateTime.Now;
@@ -29,5 +28,6 @@ namespace API.Entities
         public ICollection<Like>  Liked { get; set; }
         public ICollection<Message> MessageSent { get; set; }
         public ICollection<Message> MessageReceived { get; set; }
+        public ICollection<AppUserRole> UserRoles { get; set; }
     }
 }

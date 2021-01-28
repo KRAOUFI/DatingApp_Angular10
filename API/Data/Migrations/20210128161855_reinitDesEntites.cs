@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace API.Data.Migrations
 {
-    public partial class ExtendedUserEntity : Migration
+    public partial class reinitDesEntites : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -70,6 +70,75 @@ namespace API.Data.Migrations
                 type: "TEXT",
                 nullable: true);
 
+            migrationBuilder.AddColumn<byte[]>(
+                name: "PasswordHash",
+                table: "Users",
+                type: "BLOB",
+                nullable: true);
+
+            migrationBuilder.AddColumn<byte[]>(
+                name: "PasswordSalt",
+                table: "Users",
+                type: "BLOB",
+                nullable: true);
+
+            migrationBuilder.CreateTable(
+                name: "Likes",
+                columns: table => new
+                {
+                    SourceId = table.Column<int>(type: "INTEGER", nullable: false),
+                    LikedId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Likes", x => new { x.SourceId, x.LikedId });
+                    table.ForeignKey(
+                        name: "FK_Likes_Users_LikedId",
+                        column: x => x.LikedId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Likes_Users_SourceId",
+                        column: x => x.SourceId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SenderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SenderUsername = table.Column<string>(type: "TEXT", nullable: true),
+                    RecipientId = table.Column<int>(type: "INTEGER", nullable: false),
+                    RecipientUsername = table.Column<string>(type: "TEXT", nullable: true),
+                    Content = table.Column<string>(type: "TEXT", nullable: true),
+                    DateRead = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    MessageSent = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    SenderDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
+                    RecepientDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_RecipientId",
+                        column: x => x.RecipientId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Photo",
                 columns: table => new
@@ -93,6 +162,21 @@ namespace API.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Likes_LikedId",
+                table: "Likes",
+                column: "LikedId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_RecipientId",
+                table: "Messages",
+                column: "RecipientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_SenderId",
+                table: "Messages",
+                column: "SenderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Photo_UserId",
                 table: "Photo",
                 column: "UserId");
@@ -100,6 +184,12 @@ namespace API.Data.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Likes");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
+
             migrationBuilder.DropTable(
                 name: "Photo");
 
@@ -141,6 +231,14 @@ namespace API.Data.Migrations
 
             migrationBuilder.DropColumn(
                 name: "LookingFor",
+                table: "Users");
+
+            migrationBuilder.DropColumn(
+                name: "PasswordHash",
+                table: "Users");
+
+            migrationBuilder.DropColumn(
+                name: "PasswordSalt",
                 table: "Users");
         }
     }

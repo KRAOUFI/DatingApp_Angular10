@@ -22,7 +22,7 @@ namespace API.Controllers
         }
         
         [HttpGet("not-found")]
-        public async Task<ActionResult<User>> GetNotFoundSecret()
+        public async Task<ActionResult<AppUser>> GetNotFoundSecret()
         {
             var thing = await _userService.GetUserAsync(-1);
             if (thing == null) return NotFound();

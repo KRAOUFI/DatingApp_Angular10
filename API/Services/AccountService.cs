@@ -33,12 +33,13 @@ namespace API.Services
             {
                 if (await _userRepo.ExistAsync(x => x.UserName == dto.Username.ToLower())) return null;
 
-                using var hmac = new HMACSHA512();
-
-                var user = _mapper.Map<User>(dto);
+                var user = _mapper.Map<AppUser>(dto);
                 user.UserName = dto.Username.ToLower();
-                user.PaswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
-                user.PaswordSalt = hmac.Key;
+
+                // Ce code est valable avant la mise en place de Identity 
+                //using var hmac = new HMACSHA512();
+                //user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+                //user.PasswordSalt = hmac.Key;
 
                 _userRepo.Add(user);
                 await _userRepo.SaveAsync();
@@ -63,15 +64,15 @@ namespace API.Services
                 if (user == null) {
                     throw new Exception("Invalid username");
                 }
-
-                using var hmac = new HMACSHA512(user.PaswordSalt);
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+                // Ce code est valable avant la mise en place de Identity 
+                //using var hmac = new HMACSHA512(user.PasswordSalt);
+                //var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
                 
-                for(int i = 0; i < computedHash.Length; i++) {
-                    if (computedHash[i] != user.PaswordHash[i]) {
-                        throw new Exception("Invalid password");
-                    }
-                }
+                //for(int i = 0; i < computedHash.Length; i++) {
+                //    if (computedHash[i] != user.PasswordHash[i]) {
+                //        throw new Exception("Invalid password");
+                //    }
+                //}
 
                 return new UserDto 
                 {
