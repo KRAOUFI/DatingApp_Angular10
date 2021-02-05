@@ -18,9 +18,15 @@ namespace API.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto dto) 
         {
-            var user = await _accountService.RegisterAsync(dto);
-            return user != null ? user : BadRequest("Username is already used");
-            
+            try
+            {
+                var user = await _accountService.RegisterAsync(dto);
+                return user != null ? user : BadRequest("Username is already used");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("login")]
@@ -33,7 +39,14 @@ namespace API.Controllers
             } 
             catch (Exception ex) 
             {
-                return Unauthorized(ex.Message);
+                switch(ex.Message)
+                {
+                    case "unauthorized":
+                        return Unauthorized();
+                    default:
+                    return BadRequest(ex.Message);
+                }
+                
             }
         }
     }

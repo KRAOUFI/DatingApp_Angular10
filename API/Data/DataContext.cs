@@ -30,11 +30,18 @@ namespace API.Data
         {
             base.OnModelCreating(builder);
 
-            /* configuration des relation entre AppUser et AppRole */
+            /* configuration des relations entre AppUser et AppRole */
             builder.Entity<AppUser>()
-                .HasOne(ur => ur.UserRoles)
+                .HasMany(ur => ur.UserRoles)
                 .WithOne(u => u.User)
-                .HasForeignKey(ur => ur.UserId).IsRequired();
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
+
+            builder.Entity<AppRole>()
+                .HasMany(ur => ur.UserRoles)
+                .WithOne(u => u.Role)
+                .HasForeignKey(ur => ur.RoleId)
+                .IsRequired();
             //
 
             builder.Entity<Like>()
