@@ -25,7 +25,7 @@ namespace API.Controllers
         {
             try 
             {
-                var messageDto = await _messageService.CreateMessage(User.GetUserName(), dto);
+                var messageDto = await _messageService.CreateMessage(User.GetUserName(), dto, null);
                 return Ok(messageDto);
             }
             catch(Exception ex) 

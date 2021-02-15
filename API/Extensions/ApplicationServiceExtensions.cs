@@ -3,6 +3,7 @@ using API.Helpers;
 using API.Interfaces.IServices;
 using API.Repositories;
 using API.Services;
+using API.SignalR;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,8 @@ namespace API.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config) 
         {
             /**************** Injection de dépendance ****************/
+            services.AddSingleton<PresenceTracker>();
+            
             services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
 
             services.AddScoped<ITokenService, TokenService>();
@@ -29,7 +32,10 @@ namespace API.Extensions
             services.AddScoped<UserRepository>();
             services.AddScoped<PhotoRepository>();
             services.AddScoped<LikesRepository>();
+            services.AddScoped<ConnectionRepository>();
+            services.AddScoped<GroupRepository>();
             services.AddScoped<MessagesRepository>();
+
             
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IUserService, UserService>();

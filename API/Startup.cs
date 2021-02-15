@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using API.Extensions;
 using API.Middleware;
+using API.SignalR;
 
 namespace API
 {
@@ -31,6 +32,9 @@ namespace API
 
             // appeler la méthode d'extension qui enregistre le service Identity à injecter dans l'application
             services.AddIdentityServices(_config);
+
+            //
+            services.AddSignalR();
             
             services.AddSwaggerGen(c =>
             {
@@ -54,16 +58,21 @@ namespace API
             app.UseRouting();
 
             // Ajouter CORS Middelware pour autoriser les requetes CROS Domaine.
-            app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
+            app.UseCors(x => 
+                x.AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .WithOrigins("https://localhost:4200"));
 
-            // Ajouter le middelware de l'authentification
+            // Ajouter les middelwares de l'authentification/Authorization
             app.UseAuthentication();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllers();                
+                endpoints.MapHub<PresenceHub>("hubs/presence");
+                endpoints.MapHub<MessageHub>("hubs/message");
             });
         }
     }

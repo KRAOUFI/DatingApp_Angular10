@@ -4,6 +4,7 @@ import { ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { User } from '../_models/user';
+import { PresenceService } from './presence.service';
 
 
 // Ce décorateur indique que la classe AccountService est un
@@ -19,7 +20,7 @@ export class AccountService {
   // Selon la convention, on ajoute $ devant tout Observable
   currentUser$ = this.currentUserSource.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private presenceService: PresenceService) { }
 
   login(model: any) {
     return this.http.post(this.baseUrl + 'account/login', model).pipe(
@@ -27,6 +28,8 @@ export class AccountService {
         const user = response;
         if (user) {
           this.setCurrentUser(user);
+          // Quand l'utilisateur se connecte, on crée le hub de connection
+          this.presenceService.createHubConnection(user); 
         }
       })
     );
@@ -37,6 +40,8 @@ export class AccountService {
       map((user: User) => {
         if (user) {
           this.setCurrentUser(user);
+          // Quand l'utilisateur se connecte, on crée le hub de connection
+          this.presenceService.createHubConnection(user); 
         }
       })
     );
@@ -60,6 +65,9 @@ export class AccountService {
   logout() {
     localStorage.removeItem('user');
     this.setCurrentUser(null);
+  
+    // Quand l'utilisateur se déconnecte, on arrête le hub de connection
+    this.presenceService.stopHubConnection();
   }
 
   getDecodedToken(token) {

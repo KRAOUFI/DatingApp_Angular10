@@ -10,20 +10,27 @@ import { MessageService } from 'src/app/_services/message.service';
 })
 export class MemberMessagesComponent implements OnInit {
   @ViewChild('messageForm') messageForm: NgForm;
-  @Input() messages: Message[];
+  /*@Input() messages: Message[] = [];*/
   @Input() username: string;
   messageContent: string;
 
-  constructor(private messageService: MessageService) { }
+  constructor(public messageService: MessageService) { }
 
-  ngOnInit(): void {
-
-  }
+  ngOnInit(): void { }
 
   sendMessage() {
+    /* La methode avec l'Observable
     this.messageService.sendMessage(this.username, this.messageContent).subscribe(response => {
       this.messages.push(response);
       this.messageForm.reset();
     });
+    */
+    
+    // Puisque la méthode ne retourne plus rien, alors il suffit juste de détecter qu'elle 
+    // terminé le traitement pour poursuivre les autres actions
+    this.messageService.sendMessage(this.username, this.messageContent).then(() => {
+      this.messageForm.reset();
+    });
+
   }
 }

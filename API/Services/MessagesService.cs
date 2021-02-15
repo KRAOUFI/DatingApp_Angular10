@@ -16,15 +16,21 @@ namespace API.Services
     public class MessagesService : IMessagesService
     {
         private readonly MessagesRepository _messagesRepo;
+        private readonly GroupRepository _groupRepo;
+        private readonly ConnectionRepository _connectionRepo;
         private readonly IMapper _mapper;
         private readonly UserRepository _userRepo;
         
         public MessagesService(
             UserRepository userRepo, 
-            MessagesRepository messagesRepo, 
+            MessagesRepository messagesRepo,
+            GroupRepository groupRepo,
+            ConnectionRepository connectionRepo,
             IMapper mapper)
         {
             _messagesRepo = messagesRepo;
+            _groupRepo = groupRepo;
+            _connectionRepo = connectionRepo;
             _mapper = mapper;
             _userRepo = userRepo;
         }
@@ -119,7 +125,7 @@ namespace API.Services
             {
                 foreach(var message in unreadMessages)
                 {
-                    message.DateRead = DateTime.Now;
+                    message.DateRead = DateTime.UtcNow;
                     _messagesRepo.Update(message);
                     await _messagesRepo.SaveAsync();
                 }                
@@ -128,7 +134,7 @@ namespace API.Services
             return _mapper.Map<IEnumerable<MessageDto>>(messages);
         }
 
-        public async Task<MessageDto> CreateMessage(string senderUsername, CreateMessageDto dto) 
+        public async Task<MessageDto> CreateMessage(string senderUsername, CreateMessageDto dto, Message messageToAdd) 
         {
             try 
             {
@@ -141,18 +147,29 @@ namespace API.Services
                 if (recipient == null)
                     throw new Exception("Cannot find user");
                 
-                var message = new Message() 
+                if (messageToAdd == null) 
                 {
-                    Content = dto.Content,
-                    Sender = sender,
-                    SenderUsername = sender.UserName,
-                    Recipient = recipient,                    
-                    RecipientUsername = recipient.UserName
-                };
+                    messageToAdd = new Message() 
+                    {
+                        Content = dto.Content,
+                        Sender = sender,
+                        SenderUsername = sender.UserName,
+                        Recipient = recipient,                    
+                        RecipientUsername = recipient.UserName
+                    };
+
+                } else 
+                {
+                    messageToAdd.Content = dto.Content;
+                    messageToAdd.Sender = sender;
+                    messageToAdd.SenderUsername = sender.UserName;
+                    messageToAdd.Recipient = recipient;   
+                    messageToAdd.RecipientUsername = recipient.UserName;
+                }
                 
-                _messagesRepo.Add(message);
+                _messagesRepo.Add(messageToAdd);
                 if (await _messagesRepo.SaveAsync() > 0)
-                    return _mapper.Map<MessageDto>(message);
+                    return _mapper.Map<MessageDto>(messageToAdd);
                 
                 throw new Exception("Failed to send message");
             }
@@ -160,8 +177,47 @@ namespace API.Services
             {
                 throw ex;
             }
-            
         }
-    }
-    
+
+        public async Task<int> AddGroup(Group group)
+        {
+            _groupRepo.Add(group);
+            return await _groupRepo.SaveAsync();
+        }
+
+        public async Task<int> AddConnectionn(Connection connection)
+        {
+            _connectionRepo.Add(connection);
+            return await _connectionRepo.SaveAsync();
+        }
+
+        public async Task<Connection> GetConnection(string connectionId)
+        {
+            return await _connectionRepo.GetByConditionAsync(x => x.ConnectionId == connectionId);
+        }
+        
+        public async Task<Group> GetMessageGroup(string groupName)
+        {
+            var groupQuery = _groupRepo.AsQueryable();
+
+            return await groupQuery
+                            .Include(x => x.Connections)
+                            .FirstOrDefaultAsync(x => x.Name == groupName);
+        }
+
+        public async Task<int> RemoveConnection(Connection connection)
+        {
+            _connectionRepo.Remove(connection);
+            return await _connectionRepo.SaveAsync();
+        }
+
+        public async Task<Group> GetGroupForConnection(string connectionId)
+        {
+            var groupQuery = _groupRepo.AsQueryable();
+            return await groupQuery
+                        .Include(g => g.Connections)
+                        .Where(c => c.Connections.Any(x=>x.ConnectionId == connectionId))
+                        .FirstOrDefaultAsync();
+        }
+    }    
 }
