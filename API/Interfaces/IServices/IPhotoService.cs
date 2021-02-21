@@ -11,9 +11,8 @@ namespace API.Interfaces.IServices
         Task<ImageUploadResult> AddPhotoInCloudinaryAsync(IFormFile file);
         Task<DeletionResult> DeletePhotoInCloudinaryAsync(string publicId);
         Task<PhotoDto> AddPhotoToUser(string username, ImageUploadResult image);
-
-        Task<int> SetMainPhoto(string username, int photoId);
-        Task<int> DeletePhoto(string username, int photoId);
+        Task<bool> SetMainPhoto(string username, int photoId);
+        Task<bool> DeletePhoto(string username, int photoId);
 
     }
 }

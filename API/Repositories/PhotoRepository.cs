@@ -68,11 +68,6 @@ namespace API.Repositories
             }
         }
 
-        public async Task<int> SaveAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         public IQueryable<Photo> AsQueryable() 
         {
             return _entity.AsQueryable();

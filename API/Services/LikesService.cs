@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.DTOs;
@@ -6,30 +5,28 @@ using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces.IServices;
-using API.Repositories;
+using API.Interfaces.IUnitOfWork;
 
 namespace API.Services
 {
     public class LikesService : ILikesService
     {
-        private readonly LikesRepository _likesRepo;
-        private readonly UserRepository _userRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public LikesService(LikesRepository likesRepo, UserRepository userRepo)
+        public LikesService(IUnitOfWork unitOfWork)
         {
-            _userRepo = userRepo;
-            _likesRepo = likesRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Like> GetUserLike(int sourceUserId, int likedUserId)
         {
-            return await _likesRepo.GetByConditionAsync(x => x.SourceId == sourceUserId && x.LikedId == likedUserId);
+            return await _unitOfWork.LikesRepository.GetByConditionAsync(x => x.SourceId == sourceUserId && x.LikedId == likedUserId);
         }
 
         public async Task<PagedList<LikeDto>> GetUserLikes(LikesParams likesParams)
         {
-            var users = _userRepo.AsQueryable().OrderBy(u => u.UserName).AsQueryable();
-            var likes = _likesRepo.AsQueryable().AsQueryable();
+            var users = _unitOfWork.UserRepository.AsQueryable().OrderBy(u => u.UserName).AsQueryable();
+            var likes = _unitOfWork.LikesRepository.AsQueryable().AsQueryable();
 
             // Récupérer les likes du userId. 
             if (likesParams.Predicate == "liked")
@@ -63,7 +60,7 @@ namespace API.Services
 
         public async Task<AppUser> GetUserWithLikes(int userId)
         {
-            return await _userRepo.GetUserWithLikes(userId);
+            return await _unitOfWork.UserRepository.GetUserWithLikes(userId);
         }
 
         public async Task<string> AddLike(int sourceId, MemberDto likedUser)
@@ -81,9 +78,9 @@ namespace API.Services
                 SourceId = sourceId,
                 LikedId = likedUser.Id
             };
-            
-            _likesRepo.Add(userLike);
-            if (await _likesRepo.SaveAsync() > 0) return "ok";
+
+            _unitOfWork.LikesRepository.Add(userLike);
+            if (await _unitOfWork.Complete()) return "ok";
 
             return "Failed to like user";
         }

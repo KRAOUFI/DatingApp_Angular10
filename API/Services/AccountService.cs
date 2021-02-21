@@ -2,22 +2,17 @@ using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.Interfaces.IServices;
-using API.Repositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace API.Services
 {
     public class AccountService : IAccountService
     {
-        private readonly UserRepository _userRepo;
         private readonly UserManager<AppUser> _userMngr;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IMapper _mapper;
@@ -26,11 +21,9 @@ namespace API.Services
         public AccountService(
             UserManager<AppUser> userMngr,
             SignInManager<AppUser> signInManager,
-            UserRepository userRepo,
             IMapper mapper,
             ITokenService tokenservice)
         {
-            _userRepo = userRepo;
             _userMngr = userMngr;
             _signInManager = signInManager;
             _mapper = mapper;

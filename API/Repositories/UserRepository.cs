@@ -68,11 +68,6 @@ namespace API.Repositories
             }
         }
 
-        public async Task<int> SaveAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         public IQueryable<AppUser> AsQueryable() 
         {
             return _entity.AsQueryable();
@@ -107,6 +102,14 @@ namespace API.Repositories
             return await _entity
                 .Include(u => u.Liked)
                 .FirstOrDefaultAsync(x=>x.Id == userId);
+        }
+
+        public async Task<string> GetUserGender(string username) 
+        {
+            return await _entity
+                .Where(x=>x.UserName == username)
+                .Select(x=>x.Gender)
+                .FirstOrDefaultAsync();
         }
         #endregion        
     }

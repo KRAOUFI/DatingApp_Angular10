@@ -43,19 +43,22 @@ namespace API.Controllers
             return messages;
         }
 
+        /* 
+         ************************* Cette fonction a été déplacé dans SignalR *************************
         [HttpGet("thread/{username}")]
         public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessagesThread(string username)
         {
             var currentUsername = User.GetUserName();
             return Ok(await _messageService.GetMessageThread(currentUsername, username));
         }
+        */
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteMessage(int id) 
         {
             try
             {
-                if(await _messageService.DeleteMessage(User.GetUserName(), id) > 0)
+                if(await _messageService.DeleteMessage(User.GetUserName(), id))
                     return Ok();
                 else
                     return BadRequest("Problem deleting the message");

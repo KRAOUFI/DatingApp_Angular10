@@ -5,7 +5,7 @@ using API.DTOs;
 using API.Entities;
 using API.Helpers;
 using API.Interfaces.IServices;
-using API.Repositories;
+using API.Interfaces.IUnitOfWork;
 using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -13,20 +13,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace API.Services
-{    
+{
     public class PhotoService : IPhotoService
     {
         private readonly Cloudinary _cloudinary;
-        private readonly PhotoRepository _photoRepo;
-        private readonly UserRepository  _userRepository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
         public PhotoService(
-            IOptions<CloudinarySettings> config, 
-            UserRepository userRepository,
-            PhotoRepository photoRepo, 
+            IOptions<CloudinarySettings> config,
+            IUnitOfWork unitOfWork,
             IMapper mapper)
         {
+            
             var acc = new Account
             (
                 config.Value.CloudName,
@@ -34,77 +33,77 @@ namespace API.Services
                 config.Value.ApiSecret
             );
             _cloudinary = new Cloudinary(acc);
-            _userRepository = userRepository;
-            _photoRepo = photoRepo;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<PhotoDto> AddPhotoToUser(string username, ImageUploadResult image)
         {
-            var user = await _userRepository.GetUserByUsernameAsync(username);
-            var photo = new Photo 
+            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+            var photo = new Photo
             {
                 Url = image.SecureUrl.AbsoluteUri,
                 PublicId = image.PublicId,
                 IsMain = user.Photos.Count == 0 ? true : false
             };
 
-            user.Photos.Add(photo);            
-            _userRepository.Update(user);
-            
-            return await _userRepository.SaveAsync() > 0 ? _mapper.Map<PhotoDto>(photo) : null;
+            user.Photos.Add(photo);
+            _unitOfWork.UserRepository.Update(user);
+
+            return await _unitOfWork.Complete() ? _mapper.Map<PhotoDto>(photo) : null;
         }
 
-        public async Task<int> SetMainPhoto(string username, int photoId) 
+        public async Task<bool> SetMainPhoto(string username, int photoId)
         {
-            var user = await _userRepository.GetUserByUsernameAsync(username);
-            
-            var photoNotMain = user.Photos.FirstOrDefault(x=>x.IsMain == true);
-            if(photoNotMain != null) photoNotMain.IsMain = false;
+            var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
 
-            var photoToBeMain = user.Photos.FirstOrDefault(x=>x.Id == photoId);
-            if(photoToBeMain != null) photoToBeMain.IsMain = true;
-            
-            _userRepository.Update(user);
-            return await _userRepository.SaveAsync();
+            var photoNotMain = user.Photos.FirstOrDefault(x => x.IsMain == true);
+            if (photoNotMain != null) photoNotMain.IsMain = false;
+
+            var photoToBeMain = user.Photos.FirstOrDefault(x => x.Id == photoId);
+            if (photoToBeMain != null) photoToBeMain.IsMain = true;
+
+            _unitOfWork.UserRepository.Update(user);
+            return await _unitOfWork.Complete();
         }
 
-        public async Task<int> DeletePhoto(string username, int photoId) 
+        public async Task<bool> DeletePhoto(string username, int photoId)
         {
-            try 
+            try
             {
-                var user = await _userRepository.GetUserByUsernameAsync(username);
-                var photoToDelete = user.Photos.FirstOrDefault(x=>x.Id == photoId);
-                
-                if (photoToDelete == null) 
+                var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+                var photoToDelete = user.Photos.FirstOrDefault(x => x.Id == photoId);
+
+                if (photoToDelete == null)
                     throw new Exception("NotFound");
-                
-                if (photoToDelete.IsMain) 
+
+                if (photoToDelete.IsMain)
                     throw new Exception("BadRequest");
-                
-                if (photoToDelete.PublicId != null) 
+
+                if (photoToDelete.PublicId != null)
                 {
                     var deletionResult = await this.DeletePhotoInCloudinaryAsync(photoToDelete.PublicId);
-                    if (deletionResult.Error != null) 
+                    if (deletionResult.Error != null)
                         throw new Exception(deletionResult.Error.Message);
                 }
-                
+
                 user.Photos.Remove(photoToDelete);
-                _userRepository.Update(user);
-                return await _userRepository.SaveAsync();
-            } 
-            catch(Exception ex) 
+                _unitOfWork.UserRepository.Update(user);
+                return await _unitOfWork.Complete();
+            }
+            catch (Exception ex)
             {
                 throw ex;
-            }            
+            }
         }
 
         public async Task<ImageUploadResult> AddPhotoInCloudinaryAsync(IFormFile file)
         {
             var uploadResult = new ImageUploadResult();
-            if (file.Length > 0) {
+            if (file.Length > 0)
+            {
                 using var stream = file.OpenReadStream();
-                var uploadParams = new ImageUploadParams 
+                var uploadParams = new ImageUploadParams
                 {
                     File = new FileDescription(file.FileName, stream),
                     Transformation = new Transformation().Height(500).Width(500).Crop("fill").Gravity("face")

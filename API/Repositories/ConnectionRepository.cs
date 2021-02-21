@@ -49,11 +49,6 @@ namespace API.Repositories
             return await _entity.AnyAsync(where);
         }
 
-        public async Task<int> SaveAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         public void Add(Connection entity)
         {
             _entity.Add(entity);

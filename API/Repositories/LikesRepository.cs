@@ -70,11 +70,6 @@ namespace API.Repositories
             }
         }
 
-        public async Task<int> SaveAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         public IQueryable<Like> AsQueryable() 
         {
             return _entity.AsQueryable();

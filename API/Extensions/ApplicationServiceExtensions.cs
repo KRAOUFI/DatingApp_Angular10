@@ -1,6 +1,7 @@
 using API.Data;
 using API.Helpers;
 using API.Interfaces.IServices;
+using API.Interfaces.IUnitOfWork;
 using API.Repositories;
 using API.Services;
 using API.SignalR;
@@ -29,13 +30,15 @@ namespace API.Extensions
                 options.UseSqlite(config.GetConnectionString("DefaultConnection"));
             });
 
+            /*
             services.AddScoped<UserRepository>();
             services.AddScoped<PhotoRepository>();
             services.AddScoped<LikesRepository>();
             services.AddScoped<ConnectionRepository>();
             services.AddScoped<GroupRepository>();
             services.AddScoped<MessagesRepository>();
-
+            */
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IUserService, UserService>();

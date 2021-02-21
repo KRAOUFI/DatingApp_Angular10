@@ -5,6 +5,7 @@ using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.Interfaces.IServices;
+using API.Interfaces.IUnitOfWork;
 using API.Repositories;
 using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
@@ -17,20 +18,20 @@ namespace API.SignalR
         private readonly IMapper _mapper;
         private readonly IHubContext<PresenceHub> _presenceHub;
         private readonly PresenceTracker _presenceTracker;
-        private readonly UserRepository _userRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
         public MessageHub(
             IMessagesService messageService,
             IMapper mapper,
             IHubContext<PresenceHub> presenceHub,
             PresenceTracker presenceTracker,
-            UserRepository userRepo)
+            IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
             _messageService = messageService;
             _presenceHub = presenceHub;
             _presenceTracker = presenceTracker;
-            _userRepo = userRepo;
+            _unitOfWork = unitOfWork;
         }
 
         public override async Task OnConnectedAsync()
@@ -44,6 +45,8 @@ namespace API.SignalR
             await Clients.Group(groupName).SendAsync("UpdatedGroup", group);
 
             var messages = await _messageService.GetMessageThread(Context.User.GetUserName(), otherUser);
+            if (_unitOfWork.HasChanges()) await _unitOfWork.Complete();
+
             await Clients.Caller.SendAsync("ReceiveMessageThread", messages);
         }
 
@@ -59,7 +62,7 @@ namespace API.SignalR
             try
             {
                 var messageToAdd = new Message();
-                var sender = await _userRepo.GetUserByUsernameAsync(Context.User.GetUserName());
+                var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(Context.User.GetUserName());
 
                 var groupName = GetGroupName(sender.UserName, dto.RecipientUserName);
 
@@ -100,7 +103,7 @@ namespace API.SignalR
                 await _messageService.AddGroup(group);
             }
 
-            return await _messageService.AddConnectionn(connection) > 0 ? 
+            return await _messageService.AddConnectionn(connection) ? 
                     group : 
                     throw new HubException("Failed to join group");
         }
@@ -109,7 +112,7 @@ namespace API.SignalR
         {
             var group = await _messageService.GetGroupForConnection(Context.ConnectionId);
             var connection = group.Connections.FirstOrDefault(x => x.ConnectionId == Context.ConnectionId);
-            return await _messageService.RemoveConnection(connection) > 0 ? 
+            return await _messageService.RemoveConnection(connection) ? 
                     group : 
                     throw new HubException("Failed to remove from group");
         }

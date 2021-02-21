@@ -15,8 +15,7 @@ namespace API.IRepositories
         Task<bool> ExistAsync(Expression<Func<T, bool>> where);
         void Add(T entity);
         void Update(T entity);
-        Task DeleteAsync(int id);
-        Task<int> SaveAsync();
+        Task DeleteAsync(int id);        
         IQueryable<T> AsQueryable();
     }
 }

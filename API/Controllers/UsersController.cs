@@ -27,8 +27,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams)
         {
-            var currentUser = await _userService.GetUserByUsernameAsync(User.GetUserName());
-            var users = await _userService.GetUsersAsync(currentUser, userParams);
+            var users = await _userService.GetUsersAsync(User.GetUserName(), userParams);
             Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
             return Ok(users);
         }
@@ -42,7 +41,7 @@ namespace API.Controllers
         [HttpPut]
         public async Task<ActionResult> UpdateUser(MemberUpdateDto dtoToUpdate)
         {
-            return await _userService.UpdateUser(User.GetUserName(), dtoToUpdate) > 0 ?
+            return await _userService.UpdateUser(User.GetUserName(), dtoToUpdate) ?
                 NoContent() :
                 BadRequest("Failed to update");
         }
@@ -64,8 +63,9 @@ namespace API.Controllers
         [HttpPut("set-main-photo/{photoId}")]
         public async Task<ActionResult> SetMainPhoto(int photoId)
         {
-            var updated = await _photoService.SetMainPhoto(User.GetUserName(), photoId);
-            return updated > 0 ? NoContent() : BadRequest("Failed to set main photo");
+            return await _photoService.SetMainPhoto(User.GetUserName(), photoId) ? 
+                NoContent() : 
+                BadRequest("Failed to set main photo");
         }
 
         [HttpDelete("delete-photo/{photoId}")]

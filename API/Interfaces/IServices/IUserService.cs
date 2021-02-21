@@ -7,10 +7,10 @@ namespace API.Interfaces.IServices
 {
     public interface IUserService
     {
-        Task<PagedList<MemberDto>> GetUsersAsync(MemberDto currentUser, UserParams userParams);
+        Task<PagedList<MemberDto>> GetUsersAsync(string currentUsername, UserParams userParams);
         Task<MemberDto> GetUserAsync(int id);
         Task<MemberDto> GetUserByUsernameAsync(string username);
-        Task<int> UpdateUser(string username, MemberUpdateDto dtoToUpdate);
+        Task<bool> UpdateUser(string username, MemberUpdateDto dtoToUpdate);
         Task UpdateUserLastActivity(int userId);
     }
 }
