@@ -68,11 +68,17 @@ namespace API
             app.UseAuthentication();
             app.UseAuthorization();
 
+
+            // Indiquer à l'API d'utiliser les static files (angular app)
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();                
                 endpoints.MapHub<PresenceHub>("hubs/presence");
                 endpoints.MapHub<MessageHub>("hubs/message");
+                endpoints.MapFallbackToController("Index", "Fallback");
             });
         }
     }
